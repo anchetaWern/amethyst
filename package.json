@@ -1,0 +1,11 @@
+{
+   "name": "wifi_users",
+   "description": "wi-fi users app",
+   "version": "0.0.1",
+   "dependencies": {
+      "express": "3.x",
+      "hbs":"*",
+      "socketio" : "latest",
+      "redis" : "latest"
+   }
+}

@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Amethyst - Wi-fi Users</title>
+	<link rel="stylesheet" href="/css/bootstrap.css">
+	<link rel="stylesheet" href="/css/todcbootstrap.css">
+	<link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+	<div class="wrapper">
+		<div class="navbar navbar-inverse navbar-fixed-top">
+	      <div class="navbar-inner">
+	        <div class="container">
+	          <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+	            <span class="icon-bar"></span>
+	            <span class="icon-bar"></span>
+	            <span class="icon-bar"></span>
+	          </button>
+	          <a class="brand" href="#">Amethyst</a>
+	        </div>
+	      </div>
+	    </div>
+
+		<div class="alert alert-info">
+			<p>
+		  		<strong>Browsing</strong> - viewing of webpages (facebook, google, etc.)
+			</p>
+			<p>
+				<strong>Downloading</strong> - torrents, direct-download, online video streaming (youtube and similar sites)
+			</p>
+		</div>	    
+
+		<div class="users container">
+			{{#each users}}
+			<div class="user">
+
+				<div class="username">
+					<i class="icon-user"></i>
+					{{ name }}
+				</div>
+				<div class="status">
+					<button class="btn btn-large {{ btn_class }} toggle_status" data-status="{{ status }}" data-id="{{ id }}" type="button">{{ status }}</button>
+				</div>
+				<div class="chat">
+					<button class="btn btn-large btn-success" type="button">chat with me</button>
+				</div>
+			</div>
+			{{/each}}
+		</div>
+	</div>
+	
+	<script src="/js/vendor/jquery.min.js"></script>
+	<script>
+	$('.toggle_status').click(function(){
+		var self = $(this);
+		var id = self.data('id');
+		var current_status = self.data('status');
+		
+		$.ajax({
+			url: '/toggle_status',
+			type: 'POST',
+			dataType: 'json',
+			data: {
+				'id': id,
+				'current_status' : current_status
+			},
+			success: function(response){
+				self.text(response.new_status);
+				self.data('status', response.new_status);
+				self.removeClass('btn-primary btn-danger');
+				self.addClass(response.btn_class);
+			}
+		});
+	});
+	</script>
+</body>
+</html>

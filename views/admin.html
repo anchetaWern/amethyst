@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Amethyst - Admin</title>
+	<link rel="stylesheet" href="/css/bootstrap.css">
+	<link rel="stylesheet" href="/css/todcbootstrap.css">
+	<link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+	<div class="wrapper">
+		<div class="navbar navbar-inverse navbar-fixed-top">
+	      <div class="navbar-inner">
+	        <div class="container">
+	          <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+	            <span class="icon-bar"></span>
+	            <span class="icon-bar"></span>
+	            <span class="icon-bar"></span>
+	          </button>
+	          <a class="brand" href="#">Amethyst</a>
+	        </div>
+	      </div>
+	    </div>	
+
+	    <div class="container create_user">
+			<form class="form-horizontal">
+			  <div class="control-group">
+			    <label class="control-label" for="username">Username</label>
+			    <div class="controls">
+			      <input type="text" id="username" placeholder="username">
+			    </div>
+			  </div>
+			  <div class="control-group">
+			    <label class="control-label" for="mac_address">Mac Address</label>
+			    <div class="controls">
+			      <input type="text" id="mac_address" placeholder="mac address">
+			    </div>
+			  </div>
+			  <div class="control-group">
+			    <div class="controls">
+			      <button type="button" id="create_user" class="btn btn-success">Create User</button>
+			    </div>
+			  </div>
+			</form>	    	
+	    </div>	
+
+	    <div class="container users">
+	    	<table class="table" id="users_table">
+				<thead>
+					<tr>
+						<th>Name</th>
+						<th>Mac Address</th>
+						<th>Status</th>
+					</tr>
+				</thead>
+				<tbody>
+					{{#each users}}
+					<tr>
+						<td>{{ name }}</td>
+						<td>{{ mac_address }}</td>
+						<td>{{ status }}</td>
+					</tr>
+					{{/each}}
+				</tbody>
+			</table>
+	    </div>
+	</div>
+
+	<script src="/js/vendor/jquery.min.js"></script>
+	<script>
+	$('#create_user').click(function(){
+		var username = $.trim($('#username').val());
+		var mac_address = $.trim($('#mac_address').val());
+
+		$.ajax({
+			url: '/create_user',
+			type: 'POST',
+			dataType: 'json',
+			data: {
+				'username' : username,
+				'mac_address' : mac_address
+			},
+			success: function(responnse){
+				if(response.status == 'ok'){
+					$('#username, #mac_address').val('');
+				}
+			}
+		});
+	});
+	</script>
+</body>
+</html>

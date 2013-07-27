@@ -1,0 +1,25 @@
+.users.container {
+    margin-top: 50px;
+}
+
+.user {
+    border: 1px solid grey;
+    width: 200px;
+    height: 200px;
+    float: left;
+    margin-right: 10px;
+    text-align: center;
+}
+
+.username {
+    font-size: 20px;
+    padding: 10px;
+}
+
+.status {
+    margin: 5px;
+}
+
+.alert{
+    margin-top: 50px;
+}
