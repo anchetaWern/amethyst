@@ -29,7 +29,15 @@ redis_client.get("wifi_users", function(err, reply){
 });
 
 app.get('/', function(req, res){
-	console.log(req.connection.remoteAddress);
+	var current_user_count = current_users.length;
+	for(var x = 0; x < current_user_count; x++){
+		current_users[x]['disabled'] = '';
+		if(req.connection.remoteAddress != current_users[x]['ip_address']){
+
+			current_users[x]['disabled'] = 'disabled'; 
+		}
+	}
+
 	res.render('index', {users : current_users});
 });
 
@@ -68,17 +76,23 @@ app.post('/toggle_status', function(req, res){
 	var new_btn_class = (current_status == 'downloading') ? 'btn-primary' : 'btn-danger';
 
 	var current_user_count = current_users.length;
+	var has_updated = 0;
 
 	for(var x = 0; x < current_user_count; x++){
 		if(current_users[x]['id'] == id){
-			current_users[x]['status'] = new_status;
-			current_users[x]['btn_class'] = new_btn_class;
+
+			if(req.connection.remoteAddress == current_users[x]['ip_address']){
+				current_users[x]['status'] = new_status;
+				current_users[x]['btn_class'] = new_btn_class;
+				has_updated = 1;
+			}
 		}
 	}
 
-	redis_client.set("wifi_users", JSON.stringify(current_users));
-
-	res.send({'new_status' : new_status, 'btn_class' : new_btn_class});
+	if(has_updated == 1){
+		redis_client.set("wifi_users", JSON.stringify(current_users));
+		res.send({'new_status' : new_status, 'btn_class' : new_btn_class});
+	}
 });
 
 app.get('/get_users', function(req, res){
