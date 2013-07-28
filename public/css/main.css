@@ -1,5 +1,5 @@
 .users.container {
-    margin-top: 50px;
+    margin-top: 15px;
 }
 
 .user {
@@ -21,5 +21,18 @@
 }
 
 .alert{
-    margin-top: 50px;
+    margin-top: 15px;
+}
+
+.notification{
+    margin: 50px 10px 0 0;
+    float: right;
+}
+
+#enable_notifications{
+    display: none;
+}
+
+.clear{
+    clear: both;
 }

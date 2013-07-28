@@ -22,6 +22,12 @@
 	      </div>
 	    </div>
 
+	    <div class="notification">
+	    	<button class="btn btn-large" id="enable_notifications">Enable Notifications</button>
+	    </div>
+
+	    <div class="clear"></div>
+
 		<div class="alert alert-info">
 			<p>
 		  		<strong>Browsing</strong> - viewing of webpages (facebook, google, etc.)
@@ -40,7 +46,7 @@
 					{{ name }}
 				</div>
 				<div class="status">
-					<button class="btn btn-large {{ btn_class }} toggle_status" data-status="{{ status }}" data-id="{{ id }}" type="button">{{ status }}</button>
+					<button class="btn btn-large {{ btn_class }} toggle_status" data-status="{{ status }}" data-id="{{ id }}" data-name="{{ name }}" type="button">{{ status }}</button>
 				</div>
 				<div class="chat">
 					<button class="btn btn-large btn-success" type="button">chat with me</button>
@@ -50,11 +56,34 @@
 		</div>
 	</div>
 	
+	<script src="/socket.io/socket.io.js"></script>
 	<script src="/js/vendor/jquery.min.js"></script>
+	
+
 	<script>
+	var socket = io.connect('http://localhost');
+
+	function check_notification_permission(){
+		if(window.webkitNotifications.checkPermission() != 0){ 
+			return true;
+		}
+		return false;
+	}
+
+	if(check_notification_permission()){
+		$('#enable_notifications').show();
+	}
+
+	$('#enable_notifications').click(function(){
+		if(!check_notification_permission()){
+			window.webkitNotifications.requestPermission();
+		}
+	});
+
 	$('.toggle_status').click(function(){
 		var self = $(this);
 		var id = self.data('id');
+		var username = self.data('name');
 		var current_status = self.data('status');
 		
 		$.ajax({
@@ -70,8 +99,25 @@
 				self.data('status', response.new_status);
 				self.removeClass('btn-primary btn-danger');
 				self.addClass(response.btn_class);
+
+				
+				socket.emit('toggle_status', {'id' : id, 'status' : response.new_status, 'btn_class' : response.btn_class, 'username' : username});
+			
 			}
 		});
+	});
+
+	socket.on('update_toggle', function(data){
+		$("button[data-id="+ data.id +"]").data('status', data.status).removeClass('btn-primary, btn-danger').addClass(data.btn_class).text(data.status);
+
+		var notification_title = 'user updated status';
+		var notification_content = data.username + ' has updated status to ' + data.status;
+
+		var notification = window.webkitNotifications.createNotification(
+    	'/img/update.png', notification_title, notification_content);
+    	
+    	notification.show();
+
 	});
 	</script>
 </body>
