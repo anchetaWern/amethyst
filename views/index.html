@@ -8,7 +8,7 @@
 	<link rel="stylesheet" href="/css/main.css">
 </head>
 <body>
-	<div class="wrapper">
+	<div class="wrapper" data-userid="{{ current_user_id }}" data-username="{{ current_user_name }}">
 		<div class="navbar navbar-inverse navbar-fixed-top">
 	      <div class="navbar-inner">
 	        <div class="container">
@@ -48,16 +48,35 @@
 				<div class="status">
 					<button class="btn btn-large {{ btn_class }} toggle_status" data-status="{{ status }}" data-id="{{ id }}" data-name="{{ name }}" type="button" {{ disabled }}>{{ status }}</button>
 				</div>
+				{{#if disabled}}
 				<div class="chat">
-					<button class="btn btn-large btn-success" type="button">chat with me</button>
+					<button class="btn btn-large btn-success chat" type="button" data-id="{{ id }}">chat with me</button>
 				</div>
+				{{/if}}
 			</div>
 			{{/each}}
 		</div>
+
+		<div id="chatbox_container">
+		{{#each users}}
+			<div class="chatbox" data-id="{{ id }}">
+			  <div class="chatbox_header">
+			  	{{ name }}
+			  	<span class="close">x</span>
+			  </div>
+			  <div class="messages"></div>
+			  <div class="message">
+			  	<textarea rows="2" data-receiver-id="{{ id }}"></textarea>
+			  </div>
+			</div>
+		{{/each}}
+		</div>
 	</div>
+	
 	
 	<script src="/socket.io/socket.io.js"></script>
 	<script src="/js/vendor/jquery.min.js"></script>
+	<script src="/js/vendor/handlebars.js"></script>
 	
 
 	<script>
@@ -107,6 +126,15 @@
 		});
 	});
 
+	$('.chat').click(function(){
+		
+		var self = $(this);
+		var current_user_id = $('[data-userid]').data('userid');
+		var selected_user_id = self.data('id');
+
+		$(".chatbox[data-id="+ selected_user_id +"]").show();
+	});
+
 	socket.on('update_toggle', function(data){
 		$("button[data-id="+ data.id +"]").data('status', data.status).removeClass('btn-primary, btn-danger').addClass(data.btn_class).text(data.status);
 
@@ -119,6 +147,78 @@
     	notification.show();
 
 	});
+
+	var messages = {};
+
+	socket.on('send', function(data){
+		
+		var current_user_id = $('[data-userid]').data('userid');
+
+		var sender_id = data.sender_id;
+		var sender_name = data.sender_name;
+		var receiver_id = data.receiver_id;
+		var message = data.message;
+
+		if(current_user_id == sender_id || current_user_id == receiver_id){
+			
+			if(!messages[receiver_id]){
+				messages[receiver_id] = {};
+			}
+
+			if(!messages[receiver_id]['messages']){
+				messages[receiver_id]['messages'] = [];
+			}	
+
+			messages[receiver_id].messages.push(data);
+			var msgs = messages[receiver_id].messages;
+			var messages_count = msgs.length;
+			
+			
+			$(".chatbox[data-id="+ receiver_id +"] .messages").html('');
+
+			
+			for(var x = 0; x < messages_count; x++){
+
+				$(".chatbox[data-id="+ receiver_id +"] .messages").append('<div class="msg"><span class="sender_name">' + msgs[x]['sender_name'] + ': </span><span class="msg">' + msgs[x]['message'] + '</span></div>');
+			}
+			
+			var messages_container = $(".chatbox[data-id="+ receiver_id +"] .messages");
+			var messages_container_height = messages_container[0].scrollHeight;
+			
+			messages_container.scrollTop(messages_container_height);
+
+		}
+
+
+	});
+
+
+	$('textarea').keyup(function(e){
+		var self = $(this);
+		var code = (e.keyCode ? e.keyCode : e.which);
+		
+		var sender_id = $('[data-userid]').data('userid');
+		var sender_name = $('[data-username]').data('username');
+		var receiver_id = self.data('receiver-id');
+
+		
+
+		var message = self.val();
+
+
+		if(code == 13){ 
+			
+			socket.emit('message', {'sender_id' : sender_id, 'sender_name' : sender_name, 'message' : message, 'receiver_id' : receiver_id});
+
+			self.val('');
+
+
+		}
+	});
+
+	$('.close').click(function(){
+		$(this).parents('div:eq(1)').hide();
+	});	
 	</script>
 </body>
 </html>
