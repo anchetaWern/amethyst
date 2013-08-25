@@ -21,10 +21,17 @@ app.use(express.bodyParser());
 app.use(express.static('public'));
 
 var current_users = [];
+var user_messages = {};
 
 redis_client.get("wifi_users", function(err, reply){
-	if(reply != 'nil'){
+	if(reply != null){
 		current_users = JSON.parse(reply);
+	}
+});
+
+redis_client.get("user_messages", function(err, reply){
+	if(reply != null){
+		user_messages = JSON.parse(reply);
 	}
 });
 
@@ -101,6 +108,33 @@ app.post('/toggle_status', function(req, res){
 		res.send({'new_status' : new_status, 'btn_class' : new_btn_class});
 	}
 });
+
+app.post('/save_message', function(req, res){
+	
+	var sender_id = req.param('sender_id');
+	var receiver_id = req.param('receiver_id');
+	var message = req.param('message');
+
+	
+	if(!user_messages[receiver_id]){
+		user_messages[receiver_id] = [];
+	}	
+
+	user_messages[receiver_id].push({
+		'sender_id' : sender_id,
+		'message' : message
+	});
+	
+
+	redis_client.set("user_messages", JSON.stringify(user_messages));
+	res.send({'status' : 'ok'});
+});
+
+app.get('/get_messages', function(req, res){
+
+	res.send({'user_messages' : user_messages, 'users' : current_users});
+});
+
 
 app.get('/get_users', function(req, res){
 

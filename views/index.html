@@ -93,6 +93,33 @@
 		$('#enable_notifications').show();
 	}
 
+	$.ajax({
+		url: '/get_messages',
+		type: 'GET',
+		dataType: 'json',
+		success: function(response){
+
+			var user_messages = response.user_messages;
+
+			var users = response.users;
+
+			for(var n in user_messages){
+			  var h = user_messages[n];
+
+			  for(var z in h){
+			  	
+			  	var receiver_id = n;
+			  	var sender_id = h[z]['sender_id'];
+			  	var sender_name = users[sender_id - 1]['name'];
+			  	var message = h[z]['message'];
+
+			  	$(".chatbox[data-id="+ receiver_id +"] .messages").append('<div class="msg"><span class="sender_name">' + sender_name + ': </span><span class="msg">' + message + '</span></div>');  
+			  }
+			}
+			
+		}
+	});
+
 	$('#enable_notifications').click(function(){
 		if(!check_notification_permission()){
 			window.webkitNotifications.requestPermission();
@@ -174,13 +201,22 @@
 			var messages_count = msgs.length;
 			
 			
-			$(".chatbox[data-id="+ receiver_id +"] .messages").html('');
-
+			$(".chatbox[data-id="+ receiver_id +"] .messages").append('<div class="msg"><span class="sender_name">' + sender_name + ': </span><span class="msg">' + message + '</span></div>');
 			
-			for(var x = 0; x < messages_count; x++){
+			$.ajax({
+				url: '/save_message',
+				type: 'POST',
+				dataType: 'json',
+				data: {
+					'sender_id' : sender_id,
+					'receiver_id' : receiver_id,
+					'message' : message
+				},
+				success: function(response){
+					
+				}
+			});
 
-				$(".chatbox[data-id="+ receiver_id +"] .messages").append('<div class="msg"><span class="sender_name">' + msgs[x]['sender_name'] + ': </span><span class="msg">' + msgs[x]['message'] + '</span></div>');
-			}
 			
 			var messages_container = $(".chatbox[data-id="+ receiver_id +"] .messages");
 			var messages_container_height = messages_container[0].scrollHeight;
