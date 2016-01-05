@@ -11,6 +11,11 @@ A node.js app for monitoring internet usage. Good for shared wi-fi. So that all 
 - Group Chat
 
 
+##Project Status
+
+Abandonware. I no longer have any plans on improving and maintaining this project.
+
+
 ##License
 
 The MIT License (MIT) Copyright (c)
